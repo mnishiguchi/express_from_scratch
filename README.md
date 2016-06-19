@@ -23,3 +23,9 @@ Retrieving the app's homepage.
 ```bash
 curl http://localhost:3000
 ```
+
+Post request
+
+```bash
+curl -X POST -d "name=masa&number=39" http://localhost:3000/post
+```

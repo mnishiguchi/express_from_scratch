@@ -19,6 +19,13 @@ app.get( '/api', ( req, res ) => {
   })
 })
 
+// Body parser
+// POST /post
+app.post( '/post', ( req, res ) => {
+  res.json( req.body )
+})
+
+
 
 //---
 // DONE
@@ -26,10 +33,10 @@ app.get( '/api', ( req, res ) => {
 // 1. hello world
 // 2. static routes
 // 3. serve json
+// 4. body parser
 
 //---
 // TODO
 //---
-// 4. body parser
 // 5. middleware
 // 6. dynamic routes

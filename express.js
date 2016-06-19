@@ -32,24 +32,61 @@ function router( req, res ) {
     res.end( JSON.stringify( data ) )
   }
 
-  // Determine action searching for a matching route.
-  const action = routes[ req.method ][ req.url ]
+  // Parse body before invoking the action.
+  parseBody( req, res, () => {
+    // Determine action searching for a matching route.
+    const action = routes[ req.method ][ req.url ]
 
-  // Invoke the action
-  action( req, res )
+    // Invoke the action.
+    action( req, res )
+  })
+
+  /**
+   * Parses incoming data, then invokes the callback once it is all parsed.
+   * @param  {Object} req
+   * @param  {Object} res
+   * @param  {Function} callback
+   */
+  function parseBody( req, res, callback ) {
+    let body = []
+    req.on( 'data', d => {
+      body.push( d )
+    })
+    .on( 'end', () => {
+      let queryString = Buffer.concat( body ).toString()
+      console.log("Query string: %s", queryString)
+
+      queryString.split( '&' ).forEach( paramItem => {
+        // Create an array of key and value.
+        let pair = paramItem.split( '=' )
+
+        // Create a new object if `req.body` is not already defined.
+        req.body = req.body || {}
+
+        // Add the key value pair to `req.body`.
+        req.body[ pair[ 0 ] ] = pair[ 1 ]
+      })
+
+      callback( req.body )
+    })
+  }
 }
 
 // Export an public API object that contains the listen method.
-module.exports = function() {
+module.exports = () => {
   return {
     // Listen for the specified port.
-    listen: function( port ) {
+    listen: ( port ) => {
       server.listen( port )
     },
     // Register the specified path and action for GET.
-    get: function( path, callback ) {
+    get: ( path, callback ) => {
       routes.GET = routes.GET || {}
       routes.GET[ path ] = callback
+    },
+    post: ( path, callback ) => {
+      routes.POST = routes.POST || {}
+      routes.POST[ path ] = callback
     }
   }
 }
