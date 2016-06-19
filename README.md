@@ -1,5 +1,7 @@
 # express_from_scratch
 
+[https://jesse.sh/express-from-scratch/](https://jesse.sh/express-from-scratch/) by Jesse Shawl.
+
 - hello world
 - static routes
 - serve json
