@@ -1,6 +1,7 @@
 # express_from_scratch
 
-[https://jesse.sh/express-from-scratch/](https://jesse.sh/express-from-scratch/) by Jesse Shawl.
+In this repo, I learn how Node HTTP server works, following a screencast called
+[Express From Scratch](https://jesse.sh/express-from-scratch/) by [Jesse Shawl](https://jesse.sh/).
 
 - hello world
 - static routes

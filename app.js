@@ -1,6 +1,8 @@
 // Require my own local express.js file (not third-party library)
 const express = require( './express' )
 const app = express()
+const bodyParser = require( './body-parser' )
+
 app.listen( 3000 )
 
 // Define static routes.
@@ -22,7 +24,16 @@ app.get( '/api', ( req, res ) => {
 // Body parser
 // POST /post
 app.post( '/post', ( req, res ) => {
+  console.log( req.pizza );
   res.json( req.body )
+})
+
+// Middleware
+// Each middleware must invoke its next callback.
+app.use( bodyParser )
+app.use( ( req, res, next ) => {
+  req.pizza = "Yummy"
+  next()
 })
 
 
@@ -34,9 +45,9 @@ app.post( '/post', ( req, res ) => {
 // 2. static routes
 // 3. serve json
 // 4. body parser
+// 5. middleware
 
 //---
 // TODO
 //---
-// 5. middleware
 // 6. dynamic routes

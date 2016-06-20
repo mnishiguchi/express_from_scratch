@@ -5,12 +5,15 @@ const http = require( 'http' )
 // request and response.
 const server = http.createServer( router )
 
-// Store a callback function for each combination of request method,
+// A storage for a callback function for each combination of request method,
 // path and callback.
 // GET:
 //   '/':      doWhat_1
 //   '/greet': doWhat_2
-const routes = {}
+let routes = {}
+
+// A queue for middlewares.
+let middlewareQueue = []
 
 // A callback function that is passed into the server.
 // The HTTP server will invoke this, passing req and res.
@@ -32,8 +35,11 @@ function router( req, res ) {
     res.end( JSON.stringify( data ) )
   }
 
-  // Parse body before invoking the action.
-  parseBody( req, res, () => {
+  // Go through all the middlewares.
+  // NOTE: In order to retain the original middleware queue intact,
+  // make a copy of the queue. Otherwise, the queue would be undefined when
+  // the function is invoked multiple times.
+  when( [...middlewareQueue], () => {
     // Determine action searching for a matching route.
     const action = routes[ req.method ][ req.url ]
 
@@ -42,33 +48,22 @@ function router( req, res ) {
   })
 
   /**
-   * Parses incoming data, then invokes the callback once it is all parsed.
-   * @param  {Object} req
-   * @param  {Object} res
+   * Executes each middleware that is registered in the middeleware queue.
+   * @param  {Array<Function>}   middlewareFuncs
    * @param  {Function} callback
    */
-  function parseBody( req, res, callback ) {
-    let body = []
-    req.on( 'data', d => {
-      body.push( d )
-    })
-    .on( 'end', () => {
-      let queryString = Buffer.concat( body ).toString()
-      console.log("Query string: %s", queryString)
-
-      queryString.split( '&' ).forEach( paramItem => {
-        // Create an array of key and value.
-        let pair = paramItem.split( '=' )
-
-        // Create a new object if `req.body` is not already defined.
-        req.body = req.body || {}
-
-        // Add the key value pair to `req.body`.
-        req.body[ pair[ 0 ] ] = pair[ 1 ]
+  function when( middlewareFuncs, callback ) {
+    if ( middlewareFuncs.length ) { // Zero is falsey.
+      // Invoke the first item.
+      middlewareFuncs[ 0 ]( req, res, () => {
+        // Pop the queue and call itself recursively.
+        middlewareFuncs.shift()
+        when( middlewareFuncs, callback )
       })
 
-      callback( req.body )
-    })
+    } else {
+      callback()
+    }
   }
 }
 
@@ -87,6 +82,9 @@ module.exports = () => {
     post: ( path, callback ) => {
       routes.POST = routes.POST || {}
       routes.POST[ path ] = callback
+    },
+    use: func => {
+      middlewareQueue.push( func )
     }
   }
 }
